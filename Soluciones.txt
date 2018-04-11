@@ -1,0 +1,13 @@
+--TALLER
+--2. Tablespaces (0.125)?:
+--  a. first one with 2 Gb and 1 datafile, tablespace should be named "avianca"
+
+create tablespace AVIANCA
+ datafile 'avianca.data'
+ size 2G autoextend on;
+ 
+ -- b. Undo tablespace with 25Mb of space and 1 datafile
+ 
+ create undo tablespace UNDO
+ datafile 'undo.data'
+ size 25m autoextend on;
