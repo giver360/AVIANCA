@@ -1,4 +1,4 @@
---TALLER
+-- TALLER
 --2. Tablespaces (0.125)?:
 --  a. first one with 2 Gb and 1 datafile, tablespace should be named "avianca"
 create tablespace AVIANCA
@@ -67,3 +67,6 @@ default tablespace AVIANCA
 quota unlimited  on AVIANCA
 PROFILE development;
 GRANT CONNECT TO user4;
+
+--7. Lock one user associate with clerk profile
+alter user user2 account lock;
