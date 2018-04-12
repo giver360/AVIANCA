@@ -224,9 +224,121 @@ start with 1
 increment by 1
 nomaxvalue;
 
-drop trigger Trig_Habilitacion;
 Create Trigger Trig_Habilitacion
 before insert on "Habilitacion" for each row
 begin
 Select seq_Habilitacion.nextval into :new."Id" from Dual;
+end;
+
+
+Create Sequence seq_TipoLicencia
+start with 1
+increment by 1
+nomaxvalue;
+
+Create Trigger Trig_TipoLicencia
+before insert on "TipoLicencia" for each row
+begin
+Select seq_TipoLicencia.nextval into :new."Id" from Dual;
+end;
+
+
+Create Sequence seq_Pilotos
+start with 1
+increment by 1
+nomaxvalue;
+
+Create Trigger Trig_Pilotos
+before insert on "Pilotos" for each row
+begin
+Select seq_Pilotos.nextval into :new."Id" from Dual;
+end;
+
+Create Sequence seq_Pasajeros
+start with 1
+increment by 1
+nomaxvalue;
+
+Create Trigger Trig_Pasajeros
+before insert on "Pasajeros" for each row
+begin
+Select seq_Pasajeros.nextval into :new."Id" from Dual;
+end;
+
+Create Sequence seq_Chekin
+start with 1
+increment by 1
+nomaxvalue;
+
+Create Trigger Trig_Chekin
+before insert on "Chekin" for each row
+begin
+Select seq_Chekin.nextval into :new."Id" from Dual;
+end;
+
+Create Sequence seq_PersonalAsignado
+start with 1
+increment by 1
+nomaxvalue;
+
+Create Trigger Trig_PersonalAsignado
+before insert on "PersonalAsignado" for each row
+begin
+Select seq_PersonalAsignado.nextval into :new."Id" from Dual;
+end;
+
+Create Sequence seq_Itinerario
+start with 1
+increment by 1
+nomaxvalue;
+
+Create Trigger Trig_Itinerario
+before insert on "Itinerario" for each row
+begin
+Select seq_Itinerario.nextval into :new."Id" from Dual;
+end;
+
+
+Create Sequence seq_Vuelo
+start with 1
+increment by 1
+nomaxvalue;
+
+Create Trigger Trig_Vuelo
+before insert on "Vuelo" for each row
+begin
+Select seq_Vuelo.nextval into :new."Id" from Dual;
+end;
+
+Create Sequence seq_Rutas
+start with 1
+increment by 1
+nomaxvalue;
+
+Create Trigger Trig_Rutas
+before insert on "Rutas" for each row
+begin
+Select seq_Rutas.nextval into :new."Id" from Dual;
+end;
+
+Create Sequence seq_Aeropuerto
+start with 1
+increment by 1
+nomaxvalue;
+
+Create Trigger Trig_Aeropuerto
+before insert on "Aeropuerto" for each row
+begin
+Select seq_Aeropuerto.nextval into :new."Id" from Dual;
+end;
+
+Create Sequence seq_Aeronave
+start with 1
+increment by 1
+nomaxvalue;
+
+Create Trigger Trig_Aeronave
+before insert on "Aeronave" for each row
+begin
+Select seq_Aeronave.nextval into :new."Id" from Dual;
 end;
