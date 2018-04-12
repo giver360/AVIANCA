@@ -1,13 +1,69 @@
 --TALLER
 --2. Tablespaces (0.125)?:
 --  a. first one with 2 Gb and 1 datafile, tablespace should be named "avianca"
-
 create tablespace AVIANCA
- datafile 'avianca.data'
- size 2G autoextend on;
+datafile 'avianca.data'
+size 2G autoextend on;
  
- -- b. Undo tablespace with 25Mb of space and 1 datafile
+ -- b. Undo tablespace with 25Mb of space and 1 datafile 
+create undo tablespace UNDO
+datafile 'undo.data'
+size 25m autoextend on;
+
+--4. Create a DBA user (with the role DBA) and assign it to the tablespace called "avianca?", this user has
+--   unlimited space on the tablespace (The user should have permission to connect)
+
+Create user userdba
+identified by userdba
+default tablespace AVIANCA
+quota unlimited  on AVIANCA;
  
- create undo tablespace UNDO
- datafile 'undo.data'
- size 25m autoextend on;
+GRANT CREATE SESSION,CONNECT, DBA TO userdba;
+
+--5. Create 2 profiles
+--a. Profile 1: "clerk" password life 40 days, one session per user, 10 minutes idle, 4 failed login attempts
+
+Create Profile clerk limit
+PASSWORD_LIFE_TIME 40
+sessions_per_user 1  
+IDLE_TIME 10
+FAILED_LOGIN_ATTEMPTS 4;
+
+--b. Profile 3: "development" password life 100 days, two session per user, 30 minutes idle, no failed login attempts
+
+Create Profile development limit
+PASSWORD_LIFE_TIME 100
+sessions_per_user 2
+IDLE_TIME 30
+FAILED_LOGIN_ATTEMPTS 1; --duda
+
+--6. Create 4 users, assign them the tablespace "avianca?"; 2 of them should have the clerk profile and the
+--   remaining the development profile, all the users should be allow to connect to the database.
+
+Create user user1
+identified by user1
+default tablespace AVIANCA
+quota unlimited  on AVIANCA
+PROFILE clerk;
+GRANT CONNECT TO user1;
+
+Create user user2
+identified by user2
+default tablespace AVIANCA
+quota unlimited  on AVIANCA
+PROFILE clerk;
+GRANT CONNECT TO user2;
+
+Create user user3
+identified by user3
+default tablespace AVIANCA
+quota unlimited  on AVIANCA
+PROFILE development;
+GRANT CONNECT TO user3;
+
+Create user user4 
+identified by user4
+default tablespace AVIANCA
+quota unlimited  on AVIANCA
+PROFILE development;
+GRANT CONNECT TO user4;
