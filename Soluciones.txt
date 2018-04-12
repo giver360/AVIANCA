@@ -1,4 +1,4 @@
--- TALLER
+--TALLER
 --2. Tablespaces (0.125)?:
 --  a. first one with 2 Gb and 1 datafile, tablespace should be named "avianca"
 create tablespace AVIANCA
@@ -19,6 +19,7 @@ default tablespace AVIANCA
 quota unlimited  on AVIANCA;
  
 GRANT CREATE SESSION,CONNECT, DBA TO userdba;
+grant resource  to userdba;
 
 --5. Create 2 profiles
 --a. Profile 1: "clerk" password life 40 days, one session per user, 10 minutes idle, 4 failed login attempts
@@ -70,3 +71,162 @@ GRANT CONNECT TO user4;
 
 --7. Lock one user associate with clerk profile
 alter user user2 account lock;
+
+--8. Create tables with its columns according to your normalization
+--Create Table
+CREATE TABLE "Habilitacion" (
+  "Id" numeric(9,0) primary key,
+  "Nombre" varchar2(250) not null,
+  "Descripcion" varchar2(250)
+);
+
+CREATE TABLE "TipoLicencia" (
+  "Id" numeric(9,0) primary key not null,
+  "Descripcion" varchar(250),
+  "Id_Habilitacion" numeric(9,0),
+  constraint fk_TipoLicencia_Habilitacion foreign key ("Id_Habilitacion") references "Habilitacion"("Id")
+);
+
+CREATE TABLE "Pilotos" (
+  "Id" numeric(9,0) primary key,  
+  "Nivel_Ingles" varchar2(250),
+  "Cant_Horas_Vuelo" integer,
+  "Cargo" varchar2(250),
+  "Id_TipoLicencia" numeric(9,0) null,
+  "Id_Empleados" numeric(9,0),
+  constraint fk_Pilotos_TipoLicencia foreign key ("Id_TipoLicencia") references "TipoLicencia" ("Id"),
+  constraint fk_Pilotos_Empleados foreign key ("Id_Empleados") references "Empleados"("Id")
+);
+
+
+CREATE TABLE "Empleados" (
+  "Id" numeric(9,0) primary key,
+  "Nombre" varchar2(250),
+  "Apellido" varchar2(250),
+  "Sexo" varchar2(250),
+  "Fec_Nac" date,
+  "Antiguedad" integer,
+  "Fec_Ult_Entre_Recib" date,
+  "Direccion_Residencia" varchar2(250),
+  "Email" varchar2(250),
+  "Celular" varchar2(250),
+  "Horas_Descanso_Ult_Vuelo" integer,
+  "Estado" varchar2(250),
+  "Ubicacion_Actual" varchar2(250)
+);
+
+
+CREATE TABLE "PersonalAsignado" (
+  "Id" numeric(9,0) primary key,
+  "Tipo" varchar2(250) not null,
+  "Id_Empleados" numeric(9,0),
+  "Id_Itinerario" numeric(9,0),
+  constraint fk_PersonalAsignado_Empleados foreign key ("Id_Empleados") references "Empleados"("Id"),
+  constraint fk_PersonalAsignado_Itinerario foreign key ("Id_Itinerario") references "Itinerario"("Id")
+);
+
+
+CREATE TABLE "Itinerario" (
+  "Id" numeric(9,0) primary key,  
+  "Fecha_Est_Sal" date,
+  "Fecha_Est_Lleg" date,
+  "Fecha_Real_Sal" date,
+  "Fecha_Real_Lleg" date,
+  "Hora_Est_Sal" timestamp,
+  "Hora_Est_Lleg" timestamp,
+  "Hora_Real_Sal" timestamp,
+  "Hora_Real_Lleg" timestamp,
+  "DuracionReal" integer,
+  "Id_Vuelo" numeric(9,0),
+  "Id_Aeronave" numeric(9,0)
+);
+
+CREATE TABLE "Aeronave" (
+  "Id" numeric(9,0) primary key,
+  "Matricula" varchar2(250),
+  "Num_Serial" integer,
+  "Edad" varchar2(250),
+  "Cant_Sillas_Negocios" integer,
+  "Cant_Sillas_Economica" integer
+);
+
+
+CREATE TABLE "Checkin" (
+  "Id" numeric(9,0) primary key,  
+  "Num_Confirm_Checkin" integer,
+  "Nombre_Contacto_Emer" varchar2(250),
+  "Ciudad_Contacto_Emer" varchar2(250),
+  "Pais_Contacto_Emer" varchar2(250),
+  "Correo_Contacto_Emer" varchar2(250),
+  "Numero_Contacto_Emer" integer,  
+  "Silla_Asignada" varchar2(250),
+  "Tipo_Silla" varchar2(250),
+  "Id_Pasajero" numeric(9,0),
+  "Id_Itinerario" numeric(9,0)
+);
+
+CREATE TABLE "Rutas" (
+  "Id" numeric(9,0)primary key,
+  "Id_Aeropuerto_Origen" numeric(9,0),
+  "Id_Aeropuerto_Destino" numeric(9,0),
+  "Distancia" integer
+);
+
+CREATE TABLE "Pasajeros" (
+  "Id" numeric(9,0) primary key,
+  "Tipo_Documento" varchar2(250),
+  "Num_Documento" varchar2(250),
+  "Nombre" varchar2(250),
+  "Apellido" varchar2(250)
+);
+
+CREATE TABLE "Vuelo" (
+  "Id" numeric(9,0) primary key,
+  "Id_Ruta" numeric(9,0),
+  "Nombre" varchar2(250),
+  "Frecuencia" integer
+);
+
+CREATE TABLE "Log_Itinerario" (
+  "Id" numeric(9,0) primary key,
+  "Id_Itinerario" numeric(9,0),
+  "TimeStamp" timestamp,
+  "HoraUTC" timestamp,
+  "Latitud" varchar2(250),
+  "Longitud" varchar2(250),
+  "Altitud" integer,
+  "Velocidad" integer,
+  "Dirreccion" integer
+);
+
+CREATE TABLE "Aeropuerto" (
+  "Id" numeric(9,0) primary key,
+  "Nombre" varchar2(250),
+  "Abreviacion" varchar2(250),
+  "Ciudad" varchar2(250),
+  "Coordenadas" varchar2(250),
+  "Pais" varchar2(250)
+);
+
+--Relations
+ALTER TABLE "Itinerario" Add constraint fk_Itinerario_Vuelo foreign key ("Id_Vuelo") references "Vuelo"("Id");
+ALTER TABLE "Itinerario" Add constraint fk_Itinerario_Aeronave foreign key ("Id_Aeronave") references "Aeronave"("Id");
+ALTER TABLE "Checkin" Add constraint fk_Checkin_Pasajeros foreign key ("Id_Pasajero") references "Pasajeros"("Id");
+ALTER TABLE "Checkin" add constraint fk_Checkin_Itinerario foreign key ("Id_Itinerario") references "Itinerario"("Id");
+ALTER TABLE "Log_Itinerario" add constraint fk_LogItinerario_Itinerario foreign key ("Id_Itinerario") references "Itinerario"("Id");
+ALTER TABLE "Vuelo" add constraint fk_Vuelo_Rutas foreign key ("Id_Ruta") references "Rutas"("Id");
+ALTER TABLE "Rutas" add constraint fk_Rutas_AeropuertoOrigen foreign key ("Id_Aeropuerto_Origen") references "Aeropuerto"("Id");
+ALTER TABLE "Rutas" add constraint fk_Rutas_AeropuertoDestino foreign key ("Id_Aeropuerto_Destino") references "Aeropuerto"("Id");
+
+--Create Sequence and Trigger
+Create Sequence seq_Habilitacion
+start with 1
+increment by 1
+nomaxvalue;
+
+drop trigger Trig_Habilitacion;
+Create Trigger Trig_Habilitacion
+before insert on "Habilitacion" for each row
+begin
+Select seq_Habilitacion.nextval into :new."Id" from Dual;
+end;
