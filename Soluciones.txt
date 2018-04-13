@@ -6,9 +6,13 @@ datafile 'avianca.data'
 size 2G autoextend on;
  
  -- b. Undo tablespace with 25Mb of space and 1 datafile 
-create undo tablespace UNDO
+create undo tablespace AerolineasAvianca
 datafile 'undo.data'
 size 25m autoextend on;
+
+--3. Set the undo tablespace to be used in the system (0.125)
+
+ALTER TABLESPACE AerolineasAvianca DATAFILE ONLINE;
 
 --4. Create a DBA user (with the role DBA) and assign it to the tablespace called "avianca?", this user has
 --   unlimited space on the tablespace (The user should have permission to connect)
