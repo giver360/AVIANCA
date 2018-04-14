@@ -70,5 +70,7 @@ PROFILE development;
 GRANT CONNECT TO user4;
 
 --7. Lock one user associate with clerk profile
-
 alter user user2 account lock;
+
+--10. Link video
+https://drive.google.com/open?id=1eck_vKmHmQV1d_AH6WUBARadcOKzPPju
