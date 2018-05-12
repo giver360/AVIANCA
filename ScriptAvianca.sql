@@ -76,7 +76,8 @@
 	"Num_Serial" NUMBER(*,0), 
 	"Edad" VARCHAR2(250 BYTE), 
 	"Cant_Sillas_Negocios" NUMBER(*,0), 
-	"Cant_Sillas_Economica" NUMBER(*,0)
+	"Estado" NVARCHAR2(20), 
+	"ULTIMA_UBICACION" NVARCHAR2(255)
    ) SEGMENT CREATION IMMEDIATE 
   PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
   STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
@@ -184,3 +185,340 @@
   STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
   PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
   TABLESPACE "AVIANCA" ;
+--------------------------------------------------------
+--  DDL for Table Pasajeros
+--------------------------------------------------------
+
+  CREATE TABLE "USERDBA"."Pasajeros" 
+   (	"Id" NUMBER(9,0), 
+	"Tipo_Documento" VARCHAR2(250 BYTE), 
+	"Num_Documento" VARCHAR2(250 BYTE), 
+	"Nombre" VARCHAR2(250 BYTE), 
+	"Apellido" VARCHAR2(250 BYTE)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "AVIANCA" ;
+--------------------------------------------------------
+--  DDL for Table PersonalAsignado
+--------------------------------------------------------
+
+  CREATE TABLE "USERDBA"."PersonalAsignado" 
+   (	"Id" NUMBER(9,0), 
+	"Id_Empleados" NUMBER(9,0), 
+	"Id_Itinerario" NUMBER(9,0), 
+	"Rol" VARCHAR2(250 BYTE)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "AVIANCA" ;
+--------------------------------------------------------
+--  DDL for Table Pilotos
+--------------------------------------------------------
+
+  CREATE TABLE "USERDBA"."Pilotos" 
+   (	"Id" NUMBER(9,0), 
+	"Nivel_Ingles" VARCHAR2(250 BYTE), 
+	"Cant_Horas_Vuelo" NUMBER(*,0), 
+	"Cargo" VARCHAR2(250 BYTE), 
+	"TipoLicencia" NUMBER(9,0), 
+	"Id_Empleados" NUMBER(9,0)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "AVIANCA" ;
+--------------------------------------------------------
+--  DDL for Table Rutas
+--------------------------------------------------------
+
+  CREATE TABLE "USERDBA"."Rutas" 
+   (	"Id" NUMBER(9,0), 
+	"Id_Aeropuerto_Origen" NUMBER(9,0), 
+	"Id_Aeropuerto_Destino" NUMBER(9,0), 
+	"Distancia" NUMBER(*,0), 
+	"DURACION_PROMEDIO" NUMBER(9,0)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "AVIANCA" ;
+--------------------------------------------------------
+--  DDL for Table Vuelo
+--------------------------------------------------------
+
+  CREATE TABLE "USERDBA"."Vuelo" 
+   (	"Id" NUMBER(9,0), 
+	"Id_Ruta" NUMBER(9,0), 
+	"Nombre" VARCHAR2(250 BYTE), 
+	"Frecuencia" NUMBER(*,0)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "AVIANCA" ;
+--------------------------------------------------------
+--  Constraints for Table Aeronave
+--------------------------------------------------------
+
+  ALTER TABLE "USERDBA"."Aeronave" MODIFY ("ULTIMA_UBICACION" NOT NULL ENABLE);
+  ALTER TABLE "USERDBA"."Aeronave" ADD CONSTRAINT "CK_ESTADO_AVION" CHECK ("Estado"='Vuelo' OR "Estado"='Tierra' OR "Estado"='Mantenimiento' OR "Estado"='Reparación') ENABLE;
+  ALTER TABLE "USERDBA"."Aeronave" MODIFY ("Estado" NOT NULL ENABLE);
+  ALTER TABLE "USERDBA"."Aeronave" ADD PRIMARY KEY ("Id")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "AVIANCA"  ENABLE;
+--------------------------------------------------------
+--  Constraints for Table Aeropuerto
+--------------------------------------------------------
+
+  ALTER TABLE "USERDBA"."Aeropuerto" ADD PRIMARY KEY ("Id")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "AVIANCA"  ENABLE;
+--------------------------------------------------------
+--  Constraints for Table Checkin
+--------------------------------------------------------
+
+  ALTER TABLE "USERDBA"."Checkin" ADD PRIMARY KEY ("Id")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "AVIANCA"  ENABLE;
+--------------------------------------------------------
+--  Constraints for Table Empleados
+--------------------------------------------------------
+
+  ALTER TABLE "USERDBA"."Empleados" ADD PRIMARY KEY ("Id")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "AVIANCA"  ENABLE;
+--------------------------------------------------------
+--  Constraints for Table Itinerario
+--------------------------------------------------------
+
+  ALTER TABLE "USERDBA"."Itinerario" ADD PRIMARY KEY ("Id")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "AVIANCA"  ENABLE;
+--------------------------------------------------------
+--  Constraints for Table Log_Vuelo
+--------------------------------------------------------
+
+  ALTER TABLE "USERDBA"."Log_Vuelo" ADD PRIMARY KEY ("Id")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "AVIANCA"  ENABLE;
+--------------------------------------------------------
+--  Constraints for Table Pasajeros
+--------------------------------------------------------
+
+  ALTER TABLE "USERDBA"."Pasajeros" ADD PRIMARY KEY ("Id")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "AVIANCA"  ENABLE;
+--------------------------------------------------------
+--  Constraints for Table PersonalAsignado
+--------------------------------------------------------
+
+  ALTER TABLE "USERDBA"."PersonalAsignado" ADD PRIMARY KEY ("Id")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "AVIANCA"  ENABLE;
+  ALTER TABLE "USERDBA"."PersonalAsignado" MODIFY ("Rol" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table Pilotos
+--------------------------------------------------------
+
+  ALTER TABLE "USERDBA"."Pilotos" ADD PRIMARY KEY ("Id")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "AVIANCA"  ENABLE;
+--------------------------------------------------------
+--  Constraints for Table Rutas
+--------------------------------------------------------
+
+  ALTER TABLE "USERDBA"."Rutas" ADD PRIMARY KEY ("Id")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "AVIANCA"  ENABLE;
+--------------------------------------------------------
+--  Constraints for Table Vuelo
+--------------------------------------------------------
+
+  ALTER TABLE "USERDBA"."Vuelo" ADD PRIMARY KEY ("Id")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "AVIANCA"  ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table Checkin
+--------------------------------------------------------
+
+  ALTER TABLE "USERDBA"."Checkin" ADD CONSTRAINT "FK_CHECKIN_ITINERARIO" FOREIGN KEY ("Id_Itinerario")
+	  REFERENCES "USERDBA"."Itinerario" ("Id") ENABLE;
+  ALTER TABLE "USERDBA"."Checkin" ADD CONSTRAINT "FK_CHECKIN_PASAJEROS" FOREIGN KEY ("Id_Pasajero")
+	  REFERENCES "USERDBA"."Pasajeros" ("Id") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table Itinerario
+--------------------------------------------------------
+
+  ALTER TABLE "USERDBA"."Itinerario" ADD CONSTRAINT "FK_ITINERARIO_AERONAVE" FOREIGN KEY ("Id_Aeronave")
+	  REFERENCES "USERDBA"."Aeronave" ("Id") ENABLE;
+  ALTER TABLE "USERDBA"."Itinerario" ADD CONSTRAINT "FK_ITINERARIO_VUELO" FOREIGN KEY ("Id_Vuelo")
+	  REFERENCES "USERDBA"."Vuelo" ("Id") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table Log_Vuelo
+--------------------------------------------------------
+
+  ALTER TABLE "USERDBA"."Log_Vuelo" ADD CONSTRAINT "FK_LOGVUELO_ITINERARIO" FOREIGN KEY ("Id_Itinerario")
+	  REFERENCES "USERDBA"."Itinerario" ("Id") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table PersonalAsignado
+--------------------------------------------------------
+
+  ALTER TABLE "USERDBA"."PersonalAsignado" ADD CONSTRAINT "FK_PERSONALASIGNADO_EMPLEADOS" FOREIGN KEY ("Id_Empleados")
+	  REFERENCES "USERDBA"."Empleados" ("Id") ENABLE;
+  ALTER TABLE "USERDBA"."PersonalAsignado" ADD CONSTRAINT "FK_PERSONALASIGNADO_ITINERARIO" FOREIGN KEY ("Id_Itinerario")
+	  REFERENCES "USERDBA"."Itinerario" ("Id") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table Pilotos
+--------------------------------------------------------
+
+  ALTER TABLE "USERDBA"."Pilotos" ADD CONSTRAINT "FK_PILOTOS_EMPLEADOS" FOREIGN KEY ("Id_Empleados")
+	  REFERENCES "USERDBA"."Empleados" ("Id") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table Rutas
+--------------------------------------------------------
+
+  ALTER TABLE "USERDBA"."Rutas" ADD CONSTRAINT "FK_RUTAS_AEROPUERTODESTINO" FOREIGN KEY ("Id_Aeropuerto_Destino")
+	  REFERENCES "USERDBA"."Aeropuerto" ("Id") ENABLE;
+  ALTER TABLE "USERDBA"."Rutas" ADD CONSTRAINT "FK_RUTAS_AEROPUERTOORIGEN" FOREIGN KEY ("Id_Aeropuerto_Origen")
+	  REFERENCES "USERDBA"."Aeropuerto" ("Id") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table Vuelo
+--------------------------------------------------------
+
+  ALTER TABLE "USERDBA"."Vuelo" ADD CONSTRAINT "FK_VUELO_RUTAS" FOREIGN KEY ("Id_Ruta")
+	  REFERENCES "USERDBA"."Rutas" ("Id") ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger TRIG_AERONAVE
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "USERDBA"."TRIG_AERONAVE" 
+before insert on "Aeronave" for each row
+begin
+Select seq_Aeronave.nextval into :new."Id" from Dual;
+end;
+/
+ALTER TRIGGER "USERDBA"."TRIG_AERONAVE" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger TRIG_AEROPUERTO
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "USERDBA"."TRIG_AEROPUERTO" 
+before insert on "Aeropuerto" for each row
+begin
+Select seq_Aeropuerto.nextval into :new."Id" from Dual;
+end;
+/
+ALTER TRIGGER "USERDBA"."TRIG_AEROPUERTO" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger TRIG_EMPLEADOS
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "USERDBA"."TRIG_EMPLEADOS" 
+before insert on "Empleados" for each row
+begin
+Select seq_Empleados.nextval into :new."Id" from Dual;
+end;
+/
+ALTER TRIGGER "USERDBA"."TRIG_EMPLEADOS" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger TRIG_ITINERARIO
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "USERDBA"."TRIG_ITINERARIO" 
+before insert on "Itinerario" for each row
+begin
+Select seq_Itinerario.nextval into :new."Id" from Dual;
+end;
+/
+ALTER TRIGGER "USERDBA"."TRIG_ITINERARIO" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger TRIG_LOGVUELO
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "USERDBA"."TRIG_LOGVUELO" 
+before insert on "Log_Vuelo" for each row
+begin
+Select seq_LogVuelo.nextval into :new."Id" from Dual;
+end;
+/
+ALTER TRIGGER "USERDBA"."TRIG_LOGVUELO" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger TRIG_PASAJEROS
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "USERDBA"."TRIG_PASAJEROS" 
+before insert on "Pasajeros" for each row
+begin
+Select seq_Pasajeros.nextval into :new."Id" from Dual;
+end;
+/
+ALTER TRIGGER "USERDBA"."TRIG_PASAJEROS" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger TRIG_PERSONALASIGNADO
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "USERDBA"."TRIG_PERSONALASIGNADO" 
+before insert on "PersonalAsignado" for each row
+begin
+Select seq_PersonalAsignado.nextval into :new."Id" from Dual;
+end;
+/
+ALTER TRIGGER "USERDBA"."TRIG_PERSONALASIGNADO" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger TRIG_PILOTOS
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "USERDBA"."TRIG_PILOTOS" 
+before insert on "Pilotos" for each row
+begin
+Select seq_Pilotos.nextval into :new."Id" from Dual;
+end;
+/
+ALTER TRIGGER "USERDBA"."TRIG_PILOTOS" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger TRIG_RUTAS
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "USERDBA"."TRIG_RUTAS" 
+before insert on "Rutas" for each row
+begin
+Select seq_Rutas.nextval into :new."Id" from Dual;
+end;
+/
+ALTER TRIGGER "USERDBA"."TRIG_RUTAS" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger TRIG_VUELO
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "USERDBA"."TRIG_VUELO" 
+before insert on "Vuelo" for each row
+begin
+Select seq_Vuelo.nextval into :new."Id" from Dual;
+end;
+/
+ALTER TRIGGER "USERDBA"."TRIG_VUELO" ENABLE;
