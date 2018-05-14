@@ -184,3 +184,68 @@ From "Vuelo" v Inner join "Itinerario" i on v."Id"=i."Id_Vuelo"
               Inner join "PersonalAsignado" p on i."Id" = p."Id_Itinerario" 
               Inner join "Empleados" e on p."Id_Empleados" = e."Id"
 Where i."Estado" in ('confirmado');
+
+--Punto6
+--PRIMERA VISTA: Explain plan a la vista LISTARAERONAVES
+explain plan set statement_id = 'ep_LISTARAERONAVES01' for 
+SELECT * FROM "LISTARAERONAVES";
+
+select * from table(dbms_xplan.display('PLAN_TABLE', 'ep_LISTARAERONAVES01' , 'TYPICAL'));
+-----------------------------------------------------------------------------------------------
+--Crearemos un index sobre la tabla Itinerarios en el campo Id_Aeronaves
+create index "Id_Aeronave" on "Itinerario" ("Id_Aeronave");
+
+explain plan set statement_id = 'ep_LISTARAERONAVES02' for 
+SELECT * FROM "LISTARAERONAVES";
+
+select * from table(dbms_xplan.display('PLAN_TABLE', 'ep_LISTARAERONAVES01' , 'TYPICAL'));
+select * from table(dbms_xplan.display('PLAN_TABLE', 'ep_LISTARAERONAVES02' , 'TYPICAL'));
+--Se presento una mejora en el costo pasando de 27 a 25
+------------------------------------------------------------------------------------------------
+--Crearemos un index sobre la tabla Itinerarios en el campo Id_Aeronaves
+create index "Id_Vuelo" on "Itinerario" ("Id_Vuelo");
+
+explain plan set statement_id = 'ep_LISTARAERONAVES03' for 
+SELECT * FROM "LISTARAERONAVES";
+
+select * from table(dbms_xplan.display('PLAN_TABLE', 'ep_LISTARAERONAVES02' , 'TYPICAL'));
+select * from table(dbms_xplan.display('PLAN_TABLE', 'ep_LISTARAERONAVES03' , 'TYPICAL'));
+--El costo se mantubo igual
+--<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+--Se eliminan los index para poder realizar el ejercicio con la vista LISTARPERSONALASIGNADO ya tambien usa las mismas tablas
+drop index "Id_Aeronave";
+drop index "Id_Vuelo";
+------------------------------------------------------------------------------------------------
+--SEGUNDA VISTA: Explain plan a la vista LISTARPERSONALASIGNADO
+explain plan set statement_id = 'ep_LISTARPERSONALASIGNADO001' for 
+SELECT * FROM "LISTARPERSONALASIGNADO";
+
+select * from table(dbms_xplan.display('PLAN_TABLE', 'ep_LISTARPERSONALASIGNADO001' , 'TYPICAL'));
+-------------------------------------------------------------------------------------------------
+--Crearemos un index sobre la tabla Itinerarios en el campo Id_Aeronaves
+create index "Id_Aeronave" on "Itinerario" ("Id_Aeronave");
+
+explain plan set statement_id = 'ep_LISTARPERSONALASIGNADO002' for 
+SELECT * FROM "LISTARPERSONALASIGNADO";
+
+select * from table(dbms_xplan.display('PLAN_TABLE', 'ep_LISTARPERSONALASIGNADO001' , 'TYPICAL'));
+select * from table(dbms_xplan.display('PLAN_TABLE', 'ep_LISTARPERSONALASIGNADO002' , 'TYPICAL'));
+--El costo se mantubo igual
+-------------------------------------------------------------------------------------------------
+--Crearemos un index sobre la tabla Itinerarios en el campo Id_Aeronaves
+create index "Id_Vuelo" on "Itinerario" ("Id_Vuelo");
+
+explain plan set statement_id = 'ep_LISTARPERSONALASIGNADO003' for 
+SELECT * FROM "LISTARPERSONALASIGNADO";
+
+select * from table(dbms_xplan.display('PLAN_TABLE', 'ep_LISTARPERSONALASIGNADO002' , 'TYPICAL'));
+select * from table(dbms_xplan.display('PLAN_TABLE', 'ep_LISTARPERSONALASIGNADO003' , 'TYPICAL'));
+--El costo se mantubo igual
+--<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+--Se eliminan los index para poder realizar el ejercicio con la vista ???????? ya tambien usa las mismas tablas
+drop index "Id_Aeronave";
+drop index "Id_Vuelo";
+------------------------------------------------------------------------------------------------
+--TERCERA VISTA: Explain plan a la vista ?????????
