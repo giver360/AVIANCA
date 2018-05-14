@@ -53,11 +53,11 @@ var_aeronave_disponible number := 0;
 var_can_auxi number := 0;
 var_can_sillas number := 0;
 var_ubi_act_tri nvarchar2(255) := '';
-var_mensaje nvarchar2(255) := 'Se asigno aeronave y tripulacion correctametne al vuelo';
+var_mensaje nvarchar2(255) := 'Se asigno aeronave y tripulacion al vuelo correctametne';
 
 begin
---Punto a
---Asignar la aeronave a los vuelos confirmados, que se encuentran en el aeropuerto de salida, dos horas antes de la hora de salida
+--Numeral a
+--Asignar la aeronave a los vuelos confirmados, que se encuentran en el aeropuerto de salida, dos horas antes de la hora estimada de salida
 
 /*UPDATE (SELECT i."Id_Aeronave" as sinavio,v."ID_AERONAVE" as aviodispo
             FROM "LISTARAERONAVES" v 
@@ -65,19 +65,22 @@ begin
             where i."Id_Aeronave" is null and ROWNUM = 1) u
 SET u.sinavio = u.aviodispo;*/
 
-SELECT v."ID_AERONAVE" into var_aeronave_disponible
+--Se recupera la aeronave
+SELECT v."ID_AERONAVE" 
+into var_aeronave_disponible
 FROM "LISTARAERONAVES" v 
 INNER JOIN "Itinerario" i ON v."ID_VUELO" = i."Id_Vuelo"
 where i."Id_Aeronave" is null and ROWNUM = 1 and i."Id" = i_Itinerario;
 
-if var_aeronave_disponible > 0 then
+--Validacion de aeronave disponible para asignacion
+if sql%FOUND then
     update "Itinerario" set "Id_Aeronave" = var_aeronave_disponible where "Id" = i_Itinerario;
 else
     var_mensaje := 'No se asigno aeronave, por favor validar disponibilidad, y/o confirmacion del vuelo';
 GOTO salida;
 end if;
---------------------------------------------------------------------------------------------------
---Punto b
+--------------------------------------------------------------------------------------------------------------------------------
+--Numeral b
 --Recuperar el orgen del vuelo, para la busqueda de la tripulacion disponible
 select a."Ciudad"
 into var_ubi_act_tri
@@ -85,37 +88,43 @@ from "Itinerario" i
 inner join "Vuelo" v on i."Id_Vuelo" = v."Id"
 inner join "Rutas" r on v."Id_Ruta" = r."Id"
 inner join "Aeropuerto" a on r."Id_Aeropuerto_Origen" = a."Id"
-where v."Id" = i_Itinerario;
+where i."Id" = i_Itinerario;
 
---Recuperar El piloto y el copiloto:
+--Con el origen del vuelo y demas condiciones se busca el piloto
 insert into "PersonalAsignado" ("Rol","Id_Empleados","Id_Itinerario")
 select 'Piloto',e."Id",i_Itinerario
 from "Empleados" e inner join "Pilotos" p on e."Id" = p."Id_Empleados"
 where "Estado" = 'ACTIVO' and "Horas_Descanso_Ult_Vuelo" = 2 and "Ubicacion_Actual" = var_ubi_act_tri and ROWNUM = 1
 and p."Cargo" = 'Comandante';
 
+--Se valida piloto disponible
 if sql%NOTFOUND then
-    var_mensaje := 'No se encontro piloto';
+    rollback;--Por si no se encuentra piloto, devolver las asignaciones anteriores
+    var_mensaje := 'No se encontro piloto disponible';
 GOTO salida;
 end if;
 
+--Con el origen del vuelo y demas condiciones se busca el Copipiloto
 insert into "PersonalAsignado" ("Rol","Id_Empleados","Id_Itinerario")
 select 'Copiloto',e."Id",i_Itinerario
 from "Empleados" e inner join "Pilotos" p on e."Id" = p."Id_Empleados"
 where "Estado" = 'ACTIVO' and "Horas_Descanso_Ult_Vuelo" = 2 and "Ubicacion_Actual" = var_ubi_act_tri and ROWNUM = 1
 and p."Cargo" = 'Primer Oficial';
 
+--Se valida copipiloto disponible
 if sql%NOTFOUND then
-    var_mensaje := 'No se encontro copiloto';
+    rollback;--Por si no se encuentra copiloto, devolver las asignaciones anteriores
+    var_mensaje := 'No se encontro copiloto disponible';
 GOTO salida;
 end if;
 
---Validacion de la cantidad de asientos para asignar tripulacion
+--Busqueda de la cantidad de asientos para asignar tripulacion
 select ("Cant_Sillas_Negocios" + "Cant_Sillas_Economica") 
 into var_can_sillas 
 from "Aeronave" 
 where "Id" = var_aeronave_disponible;
 
+--Asignacion de tripulacion segun politica especificada en el primer taller
 case 
 when var_can_sillas >= 19 and var_can_sillas < 50 then var_can_auxi := 1;
 when var_can_sillas >= 50 and var_can_sillas < 100 then var_can_auxi := 2;
@@ -133,20 +142,32 @@ when var_can_sillas >= 850 and var_can_sillas < 853 then var_can_auxi := 18;
 else var_can_auxi := 1;
 end case;
 
+--Con el origen del vuelo, y politica de cantidad de asientos, se asigna los auxiliares del vuelo
 insert into "PersonalAsignado" ("Rol","Id_Empleados","Id_Itinerario")
 select 'Azafata',e."Id",i_Itinerario
 from "Empleados" e inner join "Pilotos" p on e."Id" = p."Id_Empleados"
 where "Estado" = 'ACTIVO' and "Horas_Descanso_Ult_Vuelo" = 2 and "Ubicacion_Actual" = var_ubi_act_tri and ROWNUM <= var_can_auxi
 and e."Sexo" = 'Mujer';
 
+--Se valida la disponibilidad de auxiliares de vuelo
 if sql%NOTFOUND then
+    rollback;--Por si no se encuentra auxiliares, devolver las asignaciones anteriores
     var_mensaje := 'No se encontro auxiliares';
 GOTO salida;
 end if;
 
-dbms_output.put_line(var_mensaje);
+--------------------------------------------------------------------------------------------------------------------------------
+--Numeral c
+--Se actualiza el vuelo a estado confirmado
+update "Itinerario" set "Estado" = 'confirmado' where "Id" = i_Itinerario;
+
 <<salida>>
 dbms_output.put_line(var_mensaje);
+
+EXCEPTION
+WHEN OTHERS THEN
+ROLLBACK;
+dbms_output.put_line('No se asigno aeronave, por favor validar disponibilidad, y/o confirmacion del vuelo');
 end;
 
 --Punto 4
