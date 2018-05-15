@@ -1,4 +1,4 @@
---Taller 2
+﻿--Taller 2
 --Punto A
 ALTER TABLE "Aeronave" ADD Estado NVARCHAR2(20) NOT NULL;
 ALTER TABLE "Aeronave" ADD CONSTRAINT CK_ESTADO_AVION CHECK (Estado IN ('Vuelo','Tierra','Mantenimiento','Reparación'));
@@ -184,6 +184,16 @@ From "Vuelo" v Inner join "Itinerario" i on v."Id"=i."Id_Vuelo"
               Inner join "PersonalAsignado" p on i."Id" = p."Id_Itinerario" 
               Inner join "Empleados" e on p."Id_Empleados" = e."Id"
 Where i."Estado" in ('confirmado');
+
+--Punto5
+CREATE OR REPLACE VIEW VuelosProgramado AS
+SELECT 
+    It."Id_Vuelo", It."Hora_Estimada_Salida" , It."Fecha_Estimada_Salida"
+FROM 
+    "Itinerario" It inner join "Vuelo" V on It."Id_Vuelo" = V."Id"
+WHERE
+    TRUNC(It."Fecha_Estimada_Salida") between TRUNC(SYSDATE) and TRUNC(SYSDATE + 15)
+ORDER BY It."Fecha_Estimada_Salida"
 
 --Punto6
 --PRIMERA VISTA: Explain plan a la vista LISTARAERONAVES
