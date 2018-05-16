@@ -51,7 +51,9 @@ AS
 
 var_aeronave_disponible number := 0;
 var_can_auxi number := 0;
+var_can_auxi_dispo number := 0;
 var_can_sillas number := 0;
+var_dif_horas number := 0;
 var_ubi_act_tri nvarchar2(255) := '';
 var_mensaje nvarchar2(255) := 'Se asigno aeronave y tripulacion al vuelo correctametne';
 
@@ -125,32 +127,34 @@ from "Aeronave"
 where "Id" = var_aeronave_disponible;
 
 --Asignacion de tripulacion segun politica especificada en el primer taller
-case 
-when var_can_sillas >= 19 and var_can_sillas < 50 then var_can_auxi := 1;
-when var_can_sillas >= 50 and var_can_sillas < 100 then var_can_auxi := 2;
-when var_can_sillas >= 100 and var_can_sillas < 180 then var_can_auxi := 3;
-when var_can_sillas >= 180 and var_can_sillas < 200 then var_can_auxi := 4;
-when var_can_sillas >= 200 and var_can_sillas < 250 then var_can_auxi := 5;
-when var_can_sillas >= 250 and var_can_sillas < 300 then var_can_auxi := 6;
-when var_can_sillas >= 300 and var_can_sillas < 350 then var_can_auxi := 7;
-when var_can_sillas >= 350 and var_can_sillas < 400 then var_can_auxi := 8;
-when var_can_sillas >= 450 and var_can_sillas < 500 then var_can_auxi := 9;
-when var_can_sillas >= 500 and var_can_sillas < 600 then var_can_auxi := 10;
-when var_can_sillas >= 650 and var_can_sillas < 700 then var_can_auxi := 11;
-when var_can_sillas >= 750 and var_can_sillas < 800 then var_can_auxi := 12;
-when var_can_sillas >= 850 and var_can_sillas < 853 then var_can_auxi := 18;
-else var_can_auxi := 1;
-end case;
+var_can_auxi := CANTIDAD_TRIPULACION(I_CAN_SILLAS => var_can_sillas );
+
+select TO_NUMBER(TO_CHAR("Hora_Estimada_Llegada",'HH24')) - TO_NUMBER(TO_CHAR("Hora_Estimada_Salida",'HH24'))
+into var_dif_horas
+from "Itinerario"
+where "Id" = i_Itinerario;
+
+--Si el vuelo dura mas de 6 horas, aducionar un auxiliar mas
+if var_dif_horas > 6 then
+var_can_auxi := var_can_auxi + 1;
+end if;
+
+--Se valida la disponibilidad de auxiliares de vuelo
+select count(DISTINCT(e."Id"))
+into var_can_auxi_dispo
+from "Empleados" e inner join "Pilotos" p on e."Id" <> p."Id_Empleados"
+where "Estado" = 'ACTIVO' and "Horas_Descanso_Ult_Vuelo" = 2 and "Ubicacion_Actual" = var_ubi_act_tri and p."Cargo" = 'Azafata';
+
+if var_can_auxi_dispo >= var_can_auxi then
 
 --Con el origen del vuelo, y politica de cantidad de asientos, se asigna los auxiliares del vuelo
 insert into "PersonalAsignado" ("Rol","Id_Empleados","Id_Itinerario")
 select 'Azafata',e."Id",i_Itinerario
 from "Empleados" e inner join "Pilotos" p on e."Id" = p."Id_Empleados"
 where "Estado" = 'ACTIVO' and "Horas_Descanso_Ult_Vuelo" = 2 and "Ubicacion_Actual" = var_ubi_act_tri and ROWNUM <= var_can_auxi
-and e."Sexo" = 'Mujer';
+and p."Cargo" = 'Azafata';
 
---Se valida la disponibilidad de auxiliares de vuelo
-if sql%NOTFOUND then
+else
     rollback;--Por si no se encuentra auxiliares, devolver las asignaciones anteriores
     var_mensaje := 'No se encontro auxiliares';
 GOTO salida;
@@ -161,6 +165,8 @@ end if;
 --Se actualiza el vuelo a estado confirmado
 update "Itinerario" set "Estado" = 'confirmado' where "Id" = i_Itinerario;
 
+COMMIT;
+
 <<salida>>
 dbms_output.put_line(var_mensaje);
 
@@ -169,6 +175,36 @@ WHEN OTHERS THEN
 ROLLBACK;
 dbms_output.put_line('No se asigno aeronave, por favor validar disponibilidad, y/o confirmacion del vuelo');
 end;
+
+--Funcion que se usa para determinar el numero de auxiliares en un buelo a partir del numero de sillas
+create or replace FUNCTION CANTIDAD_TRIPULACION(I_CAN_SILLAS NUMBER)
+RETURN NUMBER
+IS
+
+var_can_auxi NUMBER := 0;
+
+BEGIN
+
+case 
+when I_CAN_SILLAS >= 19 and I_CAN_SILLAS < 50 then var_can_auxi := 1;
+when I_CAN_SILLAS >= 50 and I_CAN_SILLAS < 100 then var_can_auxi := 2;
+when I_CAN_SILLAS >= 100 and I_CAN_SILLAS < 180 then var_can_auxi := 3;
+when I_CAN_SILLAS >= 180 and I_CAN_SILLAS < 200 then var_can_auxi := 4;
+when I_CAN_SILLAS >= 200 and I_CAN_SILLAS < 250 then var_can_auxi := 5;
+when I_CAN_SILLAS >= 250 and I_CAN_SILLAS < 300 then var_can_auxi := 6;
+when I_CAN_SILLAS >= 300 and I_CAN_SILLAS < 350 then var_can_auxi := 7;
+when I_CAN_SILLAS >= 350 and I_CAN_SILLAS < 400 then var_can_auxi := 8;
+when I_CAN_SILLAS >= 450 and I_CAN_SILLAS < 500 then var_can_auxi := 9;
+when I_CAN_SILLAS >= 500 and I_CAN_SILLAS < 600 then var_can_auxi := 10;
+when I_CAN_SILLAS >= 650 and I_CAN_SILLAS < 700 then var_can_auxi := 11;
+when I_CAN_SILLAS >= 750 and I_CAN_SILLAS < 800 then var_can_auxi := 12;
+when I_CAN_SILLAS >= 850 and I_CAN_SILLAS < 853 then var_can_auxi := 18;
+else var_can_auxi := 1;
+end case;
+
+RETURN var_can_auxi;
+
+END;
 
 --Punto 4
 ALTER TABLE "PersonalAsignado" ADD CONSTRAINT CK_ROL CHECK ("Rol" IN ('Piloto','Copiloto','Azafata'));
