@@ -256,7 +256,7 @@ SELECT * FROM "LISTARAERONAVES";
 
 select * from table(dbms_xplan.display('PLAN_TABLE', 'ep_LISTARAERONAVES02' , 'TYPICAL'));
 select * from table(dbms_xplan.display('PLAN_TABLE', 'ep_LISTARAERONAVES03' , 'TYPICAL'));
---El costo se mantubo igual
+--El costo se mantuvo igual
 --<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 --Se eliminan los index para poder realizar el ejercicio con la vista LISTARPERSONALASIGNADO ya tambien usa las mismas tablas
@@ -277,7 +277,7 @@ SELECT * FROM "LISTARPERSONALASIGNADO";
 
 select * from table(dbms_xplan.display('PLAN_TABLE', 'ep_LISTARPERSONALASIGNADO001' , 'TYPICAL'));
 select * from table(dbms_xplan.display('PLAN_TABLE', 'ep_LISTARPERSONALASIGNADO002' , 'TYPICAL'));
---El costo se mantubo igual
+--El costo se mantuvo igual
 -------------------------------------------------------------------------------------------------
 --Crearemos un index sobre la tabla Itinerarios en el campo Id_Aeronaves
 create index "Id_Vuelo" on "Itinerario" ("Id_Vuelo");
@@ -287,11 +287,26 @@ SELECT * FROM "LISTARPERSONALASIGNADO";
 
 select * from table(dbms_xplan.display('PLAN_TABLE', 'ep_LISTARPERSONALASIGNADO002' , 'TYPICAL'));
 select * from table(dbms_xplan.display('PLAN_TABLE', 'ep_LISTARPERSONALASIGNADO003' , 'TYPICAL'));
---El costo se mantubo igual
+--El costo se mantuvo igual
 --<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
---Se eliminan los index para poder realizar el ejercicio con la vista ???????? ya tambien usa las mismas tablas
+--Se eliminan los index para poder realizar el ejercicio con la vista VUELOSPROGRAMADO ya tambien usa las mismas tablas
 drop index "Id_Aeronave";
 drop index "Id_Vuelo";
 ------------------------------------------------------------------------------------------------
---TERCERA VISTA: Explain plan a la vista ?????????
+--TERCERA VISTA: Explain plan a la vista VUELOSPROGRAMADO
+explain plan set statement_id = 'ep_VUELOSPROGRAMADO001' for 
+SELECT * FROM "VUELOSPROGRAMADO";
+
+select * from table(dbms_xplan.display('PLAN_TABLE', 'ep_VUELOSPROGRAMADO001' , 'TYPICAL'));
+-------------------------------------------------------------------------------------------------
+--Crearemos un index sobre la tabla Itinerarios en el campo Id_Aeronaves
+create index "Id_Vuelo" on "Itinerario" ("Id_Vuelo");
+
+explain plan set statement_id = 'ep_VUELOSPROGRAMADO002' for 
+SELECT * FROM "VUELOSPROGRAMADO";
+
+select * from table(dbms_xplan.display('PLAN_TABLE', 'ep_VUELOSPROGRAMADO001' , 'TYPICAL'));
+select * from table(dbms_xplan.display('PLAN_TABLE', 'ep_VUELOSPROGRAMADO002' , 'TYPICAL'));
+--El costo se mantuvo igual
+--<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
