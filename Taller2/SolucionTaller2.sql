@@ -230,6 +230,122 @@ RETURN var_can_auxi;
 
 END;
 
+--Punto 3
+create or replace PROCEDURE checking_pasajeros(i_Itinerario IN NUMBER, i_Pasajero IN NUMBER, i_Tiposila IN NVARCHAR2)
+AS
+
+var_can_sillas_asi_vuelo number := 0;
+var_can_sillas_aeronave number := 0;
+var_pasajero number := 0;
+var_mensaje nvarchar2(255) := 'Se asigno pasajero correctamente';
+
+begin
+--ALTER TABLE "Itinerario" ADD "Cantidad_Sillas_Negocios" number(6);
+--ALTER TABLE "Itinerario" ADD "Cantidad_Sillas_Economica" number(6);
+--ALTER TABLE "Checkin" ADD CONSTRAINT CK_Tipo_Silla CHECK ("Tipo_Silla" IN ('Ejecutiva','Economica'));
+--Devolver escenario:
+--DELETE FROM "Checkin";
+
+--Validar si el cliente ya esta asignado al vuelo
+select "Id_Pasajero" 
+into var_pasajero
+from "Checkin" 
+where "Id_Pasajero" = i_Pasajero and "Id_Itinerario" = i_Itinerario;
+
+if var_pasajero = i_Pasajero then
+    var_mensaje := 'El pasajero ya esta asignado al vuelo';
+GOTO salida;
+end if;
+
+--Validacion de cantidad de sillas del avion VS cantidad de pasajeros asignados al vuelo
+if i_Tiposila = 'Ejecutiva' then 
+select i."Cantidad_Sillas_Negocios",a."Cant_Sillas_Negocios"
+into var_can_sillas_asi_vuelo,var_can_sillas_aeronave     
+from "Itinerario" i inner join "Aeronave" a on i."Id_Aeronave" = a."Id"
+where i."Id" = i_Itinerario;
+end if;
+
+if var_can_sillas_asi_vuelo > var_can_sillas_aeronave then
+    var_mensaje := 'No hay silla ejecutivas disponibles en el vuelo';
+GOTO salida;
+end if;
+
+if i_Tiposila = 'Economica' then 
+select i."Cantidad_Sillas_Economica",a."Cant_Sillas_Economica"
+into var_can_sillas_asi_vuelo,var_can_sillas_aeronave     
+from "Itinerario" i inner join "Aeronave" a on i."Id_Aeronave" = a."Id"
+where i."Id" = i_Itinerario;
+end if;
+
+if var_can_sillas_asi_vuelo > var_can_sillas_aeronave then
+    var_mensaje := 'No hay silla economica disponibles en el vuelo';
+GOTO salida;
+end if;
+
+INSERT INTO "Checkin" (
+    "Id",
+    "Num_Confirm_Checkin",
+    "Nombre_Contacto_Emer",
+    "Ciudad_Contacto_Emer",
+    "Pais_Contacto_Emer",
+    "Correo_Contacto_Emer",
+    "Numero_Contacto_Emer",
+    "Silla_Asignada",
+    "Tipo_Silla",
+    "Id_Pasajero",
+    "Id_Itinerario"
+) VALUES (
+    (select NVL(max("Id"),0) + 1 from "Checkin"),
+    (select "Num_Documento" || i_Itinerario from "Pasajeros" where "Id" = i_Pasajero and rownum = 1),
+    (select "Nombre" ||' '|| "Apellido" from "Pasajeros" where "Id" = i_Pasajero and rownum = 1),
+    'Medellin',
+    'Colombia',
+    'samuelmr722@gmail.com',
+    '3111256877',
+    'A90',
+    i_Tiposila,
+    i_Pasajero,
+    i_Itinerario
+);
+
+if sql%NOTFOUND then
+    ROLLBACK;
+    var_mensaje := 'No se asigno el pasajero';
+GOTO salida;
+end if;
+
+if i_Tiposila = 'Ejecutiva' then 
+update (select "Cantidad_Sillas_Negocios",NVL("Cantidad_Sillas_Negocios",0) + 1 as "NuevoValor" from "Itinerario" where "Id" = i_Itinerario)
+SET "Cantidad_Sillas_Negocios" = "NuevoValor";
+
+if sql%NOTFOUND then
+    ROLLBACK;
+    var_mensaje := 'No se actualizo la cantidad de sillas para el vuelo';
+GOTO salida;
+end if;
+end if;
+
+if i_Tiposila = 'Economica' then 
+update (select "Cantidad_Sillas_Economica",NVL("Cantidad_Sillas_Economica",0) + 1 as "NuevoValor" from "Itinerario" where "Id" = i_Itinerario)
+SET "Cantidad_Sillas_Economica" = "NuevoValor";
+
+if sql%NOTFOUND then
+    ROLLBACK;
+    var_mensaje := 'No se actualizo la cantidad de sillas para el vuelo';
+GOTO salida;
+end if;
+end if;
+
+COMMIT;
+
+<<salida>>
+dbms_output.put_line(var_mensaje);
+
+EXCEPTION
+WHEN OTHERS THEN
+ROLLBACK;
+dbms_output.put_line('No se asigno el pasajero o no hay sillas disponibles para el vuelo, por favor validar...Error :'|| sqlerrm);
+end;
 --Punto 4
 ALTER TABLE "PersonalAsignado" ADD CONSTRAINT CK_ROL CHECK ("Rol" IN ('Piloto','Copiloto','Azafata'));
 
