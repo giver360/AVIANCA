@@ -46,6 +46,30 @@ From
 Where  to_number(SUBSTR((origen."Hora_Estimada_Salida"-envuelo."Hora_Estimada_Llegada"),'11','3'))<='2'; --Validar que en menos de 2 horas, estará un avion en ese aeropuerto.
 
 --Punto 2
+create or replace PROCEDURE PROGRAMACION_TRIPULACION_JOB(i_horas_antes IN NUMBER)
+AS
+
+I_ITINERARIO number := 0;
+
+cursor c_vuelos is
+    select "Id"
+    from "Itinerario"
+    where TO_NUMBER(TO_CHAR(sysdate,'HH24')) - TO_NUMBER(TO_CHAR("Hora_Estimada_Salida",'HH24')) <= i_horas_antes
+    order by "Id" DESC;
+
+begin
+
+open c_vuelos;
+
+        loop    
+            fetch c_vuelos into I_ITINERARIO;            
+            exit when c_vuelos%notfound;
+            PROGRAMACION_TRIPULACION(I_ITINERARIO => I_ITINERARIO );
+        end loop;
+
+close c_vuelos;
+END;
+
 create or replace PROCEDURE PROGRAMACION_TRIPULACION(i_Itinerario IN NUMBER)
 AS
 
