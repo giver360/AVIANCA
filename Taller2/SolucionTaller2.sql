@@ -43,7 +43,7 @@ From
             and ae."Estado"='Vuelo' --Validar que el avion este en transicion entre un aeropuerto y otro.
     ) envuelo 
       on origen."Ciudad"=envuelo."Ciudad" 
-Where  to_number(SUBSTR((origen."Hora_Estimada_Salida"-envuelo."Hora_Estimada_Llegada"),'11','3'))<='2'; --Validar que en menos de 2 horas, estará un avion en ese aeropuerto.
+Where  to_number(SUBSTR((origen."Hora_Estimada_Salida"-envuelo."Hora_Estimada_Llegada"),'11','3'))>='2'; --Validar que en menos de 2 horas, estará un avion en ese aeropuerto.
 
 --Punto 2
 create or replace PROCEDURE PROGRAMACION_TRIPULACION_JOB(i_horas_antes IN NUMBER)
@@ -120,7 +120,7 @@ where i."Id" = i_Itinerario;
 insert into "PersonalAsignado" ("Rol","Id_Empleados","Id_Itinerario")
 select 'Piloto',e."Id",i_Itinerario
 from "Empleados" e inner join "Pilotos" p on e."Id" = p."Id_Empleados"
-where "Estado" = 'ACTIVO' and "Horas_Descanso_Ult_Vuelo" = 2 and "Ubicacion_Actual" = var_ubi_act_tri and ROWNUM = 1
+where "Estado" = 'ACTIVO' and "Horas_Descanso_Ult_Vuelo" >= 2 and "Ubicacion_Actual" = var_ubi_act_tri and ROWNUM = 1
 and p."Cargo" = 'Comandante';
 
 --Se valida piloto disponible
@@ -134,7 +134,7 @@ end if;
 insert into "PersonalAsignado" ("Rol","Id_Empleados","Id_Itinerario")
 select 'Copiloto',e."Id",i_Itinerario
 from "Empleados" e inner join "Pilotos" p on e."Id" = p."Id_Empleados"
-where "Estado" = 'ACTIVO' and "Horas_Descanso_Ult_Vuelo" = 2 and "Ubicacion_Actual" = var_ubi_act_tri and ROWNUM = 1
+where "Estado" = 'ACTIVO' and "Horas_Descanso_Ult_Vuelo" >= 2 and "Ubicacion_Actual" = var_ubi_act_tri and ROWNUM = 1
 and p."Cargo" = 'Primer Oficial';
 
 --Se valida copipiloto disponible
@@ -167,7 +167,7 @@ end if;
 select count(DISTINCT(e."Id"))
 into var_can_auxi_dispo
 from "Empleados" e inner join "Pilotos" p on e."Id" <> p."Id_Empleados"
-where "Estado" = 'ACTIVO' and "Horas_Descanso_Ult_Vuelo" = 2 and "Ubicacion_Actual" = var_ubi_act_tri and p."Cargo" = 'Azafata';
+where "Estado" = 'ACTIVO' and "Horas_Descanso_Ult_Vuelo" >= 2 and "Ubicacion_Actual" = var_ubi_act_tri and p."Cargo" = 'Azafata';
 
 if var_can_auxi_dispo >= var_can_auxi then
 
@@ -175,7 +175,7 @@ if var_can_auxi_dispo >= var_can_auxi then
 insert into "PersonalAsignado" ("Rol","Id_Empleados","Id_Itinerario")
 select 'Azafata',e."Id",i_Itinerario
 from "Empleados" e inner join "Pilotos" p on e."Id" = p."Id_Empleados"
-where "Estado" = 'ACTIVO' and "Horas_Descanso_Ult_Vuelo" = 2 and "Ubicacion_Actual" = var_ubi_act_tri and ROWNUM <= var_can_auxi
+where "Estado" = 'ACTIVO' and "Horas_Descanso_Ult_Vuelo" >= 2 and "Ubicacion_Actual" = var_ubi_act_tri and ROWNUM <= var_can_auxi
 and p."Cargo" = 'Azafata';
 
 else
@@ -247,12 +247,12 @@ begin
 --DELETE FROM "Checkin";
 
 --Validar si el cliente ya esta asignado al vuelo
-select "Id_Pasajero" 
+select count("Id_Pasajero")
 into var_pasajero
 from "Checkin" 
 where "Id_Pasajero" = i_Pasajero and "Id_Itinerario" = i_Itinerario;
 
-if var_pasajero = i_Pasajero then
+if var_pasajero > 0 then
     var_mensaje := 'El pasajero ya esta asignado al vuelo';
 GOTO salida;
 end if;
@@ -362,14 +362,17 @@ From "Vuelo" v Inner join "Itinerario" i on v."Id"=i."Id_Vuelo"
 Where i."Estado" in ('confirmado');
 
 --Punto5
-CREATE OR REPLACE VIEW VuelosProgramado AS
-SELECT 
-    It."Id_Vuelo", It."Hora_Estimada_Salida" , It."Fecha_Estimada_Salida"
+  CREATE OR REPLACE FORCE VIEW "SYSTEM"."VUELOSPROGRAMADO" ("Id_Vuelo", "Hora_Estimada_Salida", "Fecha_Estimada_Salida", "Id", "Id_Aeropuerto_Origen", "Id_Aeropuerto_Destino") AS 
+  SELECT 
+    It."Id_Vuelo", It."Hora_Estimada_Salida" , It."Fecha_Estimada_Salida",It."Id",R."Id_Aeropuerto_Origen", R2."Id_Aeropuerto_Destino"
 FROM 
-    "Itinerario" It inner join "Vuelo" V on It."Id_Vuelo" = V."Id"
+    "Itinerario" It 
+    inner join "Vuelo" V on It."Id_Vuelo" = V."Id"
+    inner join "Rutas" R on V."Id_Ruta" = R."Id"
+    inner join "Rutas" R2 on V."Id_Ruta" = R2."Id"
 WHERE
     TRUNC(It."Fecha_Estimada_Salida") between TRUNC(SYSDATE) and TRUNC(SYSDATE + 15)
-ORDER BY It."Fecha_Estimada_Salida"
+ORDER BY It."Fecha_Estimada_Salida";
 
 --Punto6
 --PRIMERA VISTA: Explain plan a la vista LISTARAERONAVES
