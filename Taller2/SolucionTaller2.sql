@@ -13,25 +13,25 @@ ALTER TABLE "Itinerario" ADD CONSTRAINT CK_ESTADO_VUELOS CHECK (Estado IN ('envu
 --Punto 1
 Create or Replace View ListarAeronaves AS
 Select 
-  a."Id" Id_Aeronave, origen."ID_VUELO"
+  a."Id" Id_Aeronave, origen."ID_VUELO", origen.Itinerario
 From 
       (Select distinct ao."Ciudad" ,i."Id" Itinerario, i."Hora_Estimada_Salida", v."Id" Id_Vuelo
       From "Vuelo" v Inner join "Itinerario" i on v."Id"=i."Id_Vuelo"
                       Inner join "Rutas" r on v."Id_Ruta"=r."Id"
                       Inner join "Aeropuerto" ao On r."Id_Aeropuerto_Origen"=ao."Id"
-      Where /*v."Id"='1' and*/ i."Estado"='confirmado' and i."Id_Aeronave" is null --Validar si realmente el vuelo esta confirmado y sin avion asignado.  
+      Where /*v."Id"='1' and*/ i."Estado"='programado' and i."Id_Aeronave" is null --Validar si realmente el vuelo esta confirmado y sin avion asignado.  
       ) origen       
       Inner Join "Aeronave" a on origen."Ciudad"=a."Ultima_Ubicacion" --Relacion para conocer que aviones ya se encuentran en ese aeropuerto.
 Where a."Estado"='Tierra'      -- Garantizar que el avion este en tierra y no en vuelo en proceso
 union
 Select 
-  envuelo."Id" Id_Aeronave, origen."ID_VUELO"
+  envuelo."Id" Id_Aeronave, origen."ID_VUELO", origen.Itinerario
 From    
     (Select distinct ao."Ciudad" ,i."Id" Itinerario, i."Hora_Estimada_Salida", v."Id" Id_Vuelo
       From "Vuelo" v Inner join "Itinerario" i on v."Id"=i."Id_Vuelo"
                       Inner join "Rutas" r on v."Id_Ruta"=r."Id"
                       Inner join "Aeropuerto" ao On r."Id_Aeropuerto_Origen"=ao."Id"
-      Where /*v."Id"='1' and*/ i."Estado"='confirmado' and i."Id_Aeronave" is null --Validar si realmente el vuelo esta confirmado y sin avion asignado. 
+      Where /*v."Id"='1' and*/ i."Estado"='programado' and i."Id_Aeronave" is null --Validar si realmente el vuelo esta confirmado y sin avion asignado. 
     ) origen   
     inner join
     (select a."Ciudad", ae."Id", i."Hora_Estimada_Llegada"
@@ -39,11 +39,11 @@ From
                     Inner join "Rutas" r On v."Id_Ruta"=r."Id"
                     Inner join "Aeropuerto" a On r."Id_Aeropuerto_Destino"=a."Id"              
                     Inner join "Aeronave" ae On i."Id_Aeronave"=ae."Id"
-      Where  i."Estado"='confirmado'  --Validar si realmente el vuelo se confirmo, asi garantizar el aeropuerto destino.
+      Where  i."Estado" in ('confirmado','abordando','envuelo' )  --Validar si realmente el vuelo se confirmo, asi garantizar el aeropuerto destino.
             and ae."Estado"='Vuelo' --Validar que el avion este en transicion entre un aeropuerto y otro.
     ) envuelo 
       on origen."Ciudad"=envuelo."Ciudad" 
-Where  to_number(SUBSTR((origen."Hora_Estimada_Salida"-envuelo."Hora_Estimada_Llegada"),'11','3'))<='2'; --Validar que en menos de 2 horas, estará un avion en ese aeropuerto.
+Where  to_number(SUBSTR((origen."Hora_Estimada_Salida"-envuelo."Hora_Estimada_Llegada"),'11','3'))>='2'; --Validar que en menos de 2 horas, estará un avion en ese aeropuerto.
 
 --Punto 2
 create or replace PROCEDURE PROGRAMACION_TRIPULACION_JOB(i_horas_antes IN NUMBER)
